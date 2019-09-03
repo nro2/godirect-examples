@@ -27,7 +27,7 @@ functions, and avoid the prompts.
 **** This example assumes the Go Direct sensor is connected via USB.
 
 '''
-
+import time
 from gdx import gdx #the gdx function calls are from a gdx.py file inside the gdx folder.
 gdx = gdx.gdx()
 
@@ -35,11 +35,15 @@ gdx.open_usb()
 gdx.select_sensors()
 gdx.start() 
 
-for i in range(0,5):
+begin = time.time()
+for i in range(0,10):
     measurements = gdx.read() #returns a list of measurements from the sensors selected.
     if measurements == None: 
         break 
     print(measurements)
-
+end = time.time()
+final = end - begin
+print("")
+print(final, "is total runtime")
 gdx.stop()
 gdx.close()
