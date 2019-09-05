@@ -93,7 +93,7 @@ class gdx:
 		""" 
         if self.ble_open == False:
             print("Wait for device to connect via ble...")
-            self.godirect.__init__(use_ble=True, use_usb=False)
+            self.godirect.__init__(use_ble=True, use_ble_bg=True, use_usb=False)
 
         #print("Begin search for ble devices...")
         found_devices = self.godirect.list_devices() #find all available bluetooth devices 
