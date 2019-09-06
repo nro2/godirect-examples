@@ -82,7 +82,7 @@ class gdx:
 
 
 
-    def open_ble(self,device_to_open=None):
+    def open_ble(self,device_to_open=None, use_ble_bg=False):
         """ Open a Go Direct device via bluetooth for data collection. 
         
         Args: 
@@ -90,10 +90,15 @@ class gdx:
         devices for the user to choose one. Set to a specific Go Direct device name, 
         for example "GDX-FOR 071000U9", to open that device. Set to "proximity_pairing"
         to open the device with the highest rssi (closest proximity).
-		""" 
-        if self.ble_open == False:
-            print("Wait for device to connect via ble...")
-            self.godirect.__init__(use_ble=True, use_ble_bg=True, use_usb=False)
+		"""
+        if self.godirect.get_version() >= '1.0.5':
+            if self.ble_open == False:
+              print("Wait for device to connect via ble...")
+              self.godirect.__init__(use_ble=True, use_ble_bg=use_ble_bg, use_usb=False)
+        else:
+             if self.ble_open == False:
+              print("Wait for device to connect via ble...")
+              self.godirect.__init__(use_ble=True, use_usb=False)
 
         #print("Begin search for ble devices...")
         found_devices = self.godirect.list_devices() #find all available bluetooth devices 
