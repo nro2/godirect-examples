@@ -44,6 +44,14 @@ The [gdx_getting_started_5.py](https://github.com/VernierST/godirect-examples/bl
 - Collect a few measurements from the enabled sensors
 - Output the data as a comma-separated-value file
 
+## Example 6: Collect Data at High Speeds with Multiple Channels
+
+The [gdx_getting_started_6.py](https://github.com/VernierST/godirect-examples/blob/master/python/gdx_getting_started_6.py) example shows how to collect data at high speeds with multiple sensors, using a list of lists.
+
+- Connect to a Go Direct device through a USB cable or BLE
+- Set the active sensors and collection rate
+- Collect a few measurements from the enabled sensors
+
 ## License
 
 All of the content in this repository is available under the terms of the [BSD 3-Clause License](../LICENSE).
