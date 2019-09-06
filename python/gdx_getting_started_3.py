@@ -1,18 +1,14 @@
 ''' 
 This example lists information about all of the sensor channels on a Go Direct device.
 This includes sensor channel number, sensor description, units and "incompatible sensors". 
-
 "Incompatible sensors" refers to sensor channels that cannot operate at the
 same time. Most devices allow all sensor channels to collect data at 
 the same time. However, devices like Sound and EKG have some sensors that do not work
 when the other on-board sensors are collecting data.
-
 Also note that not all devices have sensor numbers that start with 1, and not all
 numbers are used. For example, Light and Color sensor numbers are [1,2,5,6,7] and 
 Motion Detector is [5,6,7], with each channel being incompatible with the others.
-
 This example highlights the use of the gdx.sensor_info() function.
-
 '''
 
 from gdx import gdx

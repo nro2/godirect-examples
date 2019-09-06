@@ -1,3 +1,9 @@
+""" 
+In this example, we show how to read multiple channels at high speeds.  The function that
+we are using to read the measurements returns a list of lists, and because of that, it
+needs to be read with nested for loops.
+
+ """
 import time
 from gdx import gdx #the gdx function calls are from a gdx.py file inside the gdx folder.
 gdx = gdx.gdx()
@@ -8,6 +14,7 @@ gdx.select_sensors()
 gdx.start()
 num = 100
 count = 0
+
 
 begin = time.time()
 while count < num:

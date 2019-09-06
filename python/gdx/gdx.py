@@ -1,30 +1,12 @@
 from godirect import GoDirect
 
 import logging
-import threading            #Ex 9
 import time                 #Ex all new ones
 
 logging.basicConfig()
 #logging.getLogger('godirect').setLevel(logging.DEBUG)
 #logging.getLogger('pygatt').setLevel(logging.DEBUG)
 #logging.getLogger('bleak').setLevel(logging.DEBUG)
-
-class member:                           #Ex 10
-    def __init__(self):
-        self.data = []
-        self.index = 0
-
-    def getData(self):
-        return self.data
-
-    def getIndex(self):
-        return self.index
-
-    def setData(self, data):
-        self.data.append(data)
-    
-    def setIndex(self, index):
-        self.index = index
 
 class gdx:
 
@@ -33,15 +15,6 @@ class gdx:
         self.selected_device = None
         self.godirect = GoDirect(use_ble=False, use_usb=False) # testing a way to control USB and BLE
         self.ble_open = False #used to keep track of when godirect.__init__(use_ble) is called. Do not want to call it twice
-        self.stored_values = {}             #Ex 8 and 9
-        self.index = 0                      #Ex 8, 10
-        self.dataLock = threading.Lock()    #Ex 9
-        self.collectRunning = True          #Ex 9
-        self.per = 0                        #Ex 7
-        self.cycle_count = 1                #Ex 10
-        self.increment = False              #Ex 10
-        
-
 
     def open_usb(self):
         """ Discovers the Go Direct device with a USB connection and opens that device
@@ -243,203 +216,6 @@ class gdx:
         else:
             return None
 
-########################################################
-#                                                      #
-#                   New edits                          #
-#                                                      #
-########################################################
-
-    def new_start(self, period=None):                                       #Ex 9
-        """ Enables the sensors that were selected in the select_sensors() function 
-        and then starts data collection.
-        
-        Args: 
-            period (int): If period is left blank, a prompt in the terminal allows the user to enter
-            the period. Otherwise, enter a period in milliseconds, e.g. 1000
-		"""        
-        if self.selected_device == None:
-            return 
-
-        if period == None: #if the period parameter is left blank, user prompted to enter the period
-            print("Select period (ms):", end=' ')
-            period = int(input())
-            self.per = period
-
-        self.selected_device.enable_sensors(sensors=self.selected_sensors)
-        self.selected_device.start(period=period)
-        self.collectThread = threading.Thread(target=self.collectLoop)      #Ex 9
-        self.collectThread.start()                                          #Ex 9
-
-    def to_increment(self):
-        if (self.cycle_count % (len(self.getSensors())) == 0):
-            self.increment = True
-        else:
-            self.increment = False
-
-    def collectLoop(self):                                                  #Ex 9
-        while self.collectRunning:
-            self.readStoreDict()
-            #time.sleep(0)
-
-    def getPeriod(self):                                                    #Ex 7
-        return self.per
-
-    def getSensors(self):                                                   #Returns a list of the enabled Sensors #Ex 7, 8, 9, 10
-        sensors = []
-        sensor_list = self.selected_device.get_enabled_sensors()
-        for sensor in sensor_list:
-            sensors.append(sensor.sensor_id)
-        return sensors
-
-
-    def valueReturner(self, key):                                           #Ex 10
-        values = []
-        localIndex = self.stored_values[key].getIndex()
-        if (len(self.stored_values[key].getData()) > 0):                #Takes all values from specific channel and returns them in a list
-            for i in range(localIndex, len(self.stored_values[key].getData())):
-                values.append(self.stored_values[key].getData()[i])
-                localIndex += 1
-        self.stored_values[key].setIndex(localIndex)
-        if (len(values) > 0):
-            return values
-        else:
-            return None 
-
-    def readStoreDict(self):                                    #Ex 10
-   
-        if self.selected_device == None:
-            return None
-        if self.selected_device.read():
-            sensors = self.selected_device.get_enabled_sensors()
-            if sensors != None:
-                for sensor in sensors:
-                    if sensor.sensor_id not in self.stored_values:                      #Check if the object is already in dict, if not, create a new one
-                        self.stored_values[sensor.sensor_id] = member()
-                    for val in sensor.values:                                           #Calls function to append to data list in member object
-                        self.stored_values[sensor.sensor_id].setData(val)
-                    sensor.clear()
-
-    """
-    def valueReturner(self, key):                                           #Ex 10
-        values = []
-        self.to_increment()
-        self.cycle_count += 1
-        localIndex = self.index
-        if (len(self.stored_values[key]) > 0):                #Takes all values from specific channel and returns them in a list
-            for i in range(localIndex, len(self.stored_values[key])):
-                values.append(self.stored_values[key][i])
-                #values.append(self.stored_values[key].pop(0))
-                localIndex += 1
-                if self.increment == True:
-                    self.index += 1
-        if (len(values) > 0):
-            return values
-        else:
-            return None 
-
-    def readStoreDict(self):                                    #Ex 10
-       """  """ 
-
-        Returns: Nothing.  Fills stored_values dictionary for use in other functions
-
-        """  """
-        if self.selected_device == None:
-            return None
-        if self.selected_device.read():
-            sensors = self.selected_device.get_enabled_sensors()
-            if sensors != None:
-                for sensor in sensors: 
-                    for val in sensor.values:
-                        self.stored_values.setdefault(sensor.sensor_id, []).append(val)
-                    sensor.clear() 
-    """
-
-    def readStoreDictLocking(self):                              #Ex 9
-        """ 
-
-        Returns: Nothing.  Fills stored_values dictionary for use in other functions
-
-        """        
-        if self.selected_device == None:
-            return None
-        if self.selected_device.read():
-            sensors = self.selected_device.get_enabled_sensors()
-            if sensors != None:
-                #time.sleep(.0001)
-                with self.dataLock:
-                    print("after lock in readvalues")
-                    for sensor in sensors: 
-                        for val in sensor.values:
-                            self.stored_values.setdefault(sensor.sensor_id, []).append(val)
-                            print(val, "is val")
-                        sensor.clear()
-
-    def retValues(self):                        #Ex 9
-        """ 
-        Returns a list of the most recent values for printing 
-        """
-        values = []
-        #time.sleep(.0001)
-        with self.dataLock:
-            print("after lock in ret")
-            for key,value in self.stored_values.items():
-                if (len(self.stored_values[key]) > self.index):
-                    values.append(self.stored_values[key][self.index])
-            self.index += 1
-        #time.sleep(.01)
-        if (len(values) > 0):
-            return values
-        else:
-            return None 
-
-    def readValuesRetLatestDict(self):                 #Ex 8
-        """ 
-
-        Returns:
-            values[]: a list with just the latest values.
-        """        
-        values = []
-
-        if self.selected_device == None:
-            return None
-        if self.selected_device.read():
-            sensors = self.selected_device.get_enabled_sensors()
-            if sensors != None:
-                for sensor in sensors: 
-                    for val in sensor.values:
-                        self.stored_values.setdefault(sensor.sensor_id, []).append(val)
-                    sensor.clear()
-            for key,value in self.stored_values.items():
-                if (len(self.stored_values[key]) > 0):
-                    values.append(self.stored_values[key][self.index])
-            self.index += 1
-            return values 
-        else:
-            return None
-
-
-    def readValuesRetDict(self):                    #Ex 7
-
-        """ 
-
-        Returns:
-            value{}: a dictionary that includes a data point from each of the enabled sensors
-        """        
-        values = {}
-        if self.selected_device == None:
-            return None
-        if self.selected_device.read():
-            sensors = self.selected_device.get_enabled_sensors()
-            if sensors != None:
-                for sensor in sensors: 
-                    for val in sensor.values:
-                        values.setdefault(sensor.sensor_id, []).append(val)
-                    sensor.clear()
-                return values 
-        else:
-            return None
-
-
     def readValues(self):             #Ex 6
 
         """ Same functionality as read() above, however value sensor.values is copied into
@@ -493,22 +269,9 @@ class gdx:
     def stop(self):
         """ Stop data collection on the enabled sensors.
 		"""
-        """ self.collectRunning = False
-        self.collectThread.join    """  
-        """ if self.collectThread.is_alive():
-	        self.collectThread.join() """
         if self.selected_device == None: 
             return
         self.selected_device.stop()
-
-
-########################################################
-#                                                      #
-#                   End edits                          #
-#                                                      #
-########################################################
-
-
 
     def close(self):
         """ Disconnect the USB or BLE device if a device is open.
